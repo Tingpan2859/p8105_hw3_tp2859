@@ -1,0 +1,99 @@
+---
+title: "p8105_hw3_tp2859"
+author: "Tingcheng Pan"
+date: "2024-10-12"
+output: html_document
+---
+
+```{r}
+library(p8105.datasets)
+library(tidyverse)
+data("ny_noaa")
+data <- ny_noaa
+```
+
+```{r}
+data <- data %>%
+  mutate(date = as.Date(date),
+         year = lubridate::year(date),
+         month = lubridate::month(date),
+         day = lubridate::day(date))
+```
+
+```{r}
+# Convert units (assuming tenths of mm for prcp, snow, snwd and tenths of degrees for tmax, tmin)
+data <- data %>%
+  mutate(
+    prcp = as.numeric(prcp) / 10,  # Convert to mm
+    snow = as.numeric(snow) / 10,  # Convert to mm
+    snwd = as.numeric(snwd) / 10,  # Convert to mm
+    tmax = as.numeric(tmax) / 10,  # Convert to degrees Celsius
+    tmin = as.numeric(tmin) / 10  # Convert to degrees Celsius
+  )
+
+# Summary of most common snowfall values
+snowfall_counts <- data %>% 
+  count(snow, sort = TRUE)
+print(snowfall_counts)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r}
+# Summary of most common snowfall values
+snowfall_counts <- data %>% 
+  count(snow, sort = TRUE)
+print(snowfall_counts)
+
+# Average max temperature in January and July across years
+january_data <- data %>% filter(month == 1)
+july_data <- data %>% filter(month == 7)
+
+avg_max_temp_january <- january_data %>% group_by(id, year) %>% summarise(avg_tmax = mean(tmax, na.rm = TRUE), .groups = 'drop')
+avg_max_temp_july <- july_data %>% group_by(id, year) %>% summarise(avg_tmax = mean(tmax, na.rm = TRUE), .groups = 'drop')
+
+```
+
+
+```{r}
+# Plotting average max temperature in January and July
+par(mfrow = c(1, 2))
+
+plot(avg_max_temp_january$year, avg_max_temp_january$avg_tmax, type = 'b', col = 'blue',
+     main = 'Average Max Temperature in January', xlab = 'Year', ylab = 'Temperature (°C)')
+
+plot(avg_max_temp_july$year, avg_max_temp_july$avg_tmax, type = 'b', col = 'red',
+     main = 'Average Max Temperature in July', xlab = 'Year', ylab = 'Temperature (°C)')
+# Tmax vs Tmin and snowfall distribution
+par(mfrow = c(1, 2))
+
+# Hexbin-like scatterplot for tmax vs tmin
+data_filtered <- data %>% filter(!is.na(tmax) & !is.na(tmin))
+dens <- MASS::kde2d(data_filtered$tmax, data_filtered$tmin, n = 50)
+image(dens, col = topo.colors(50), main = 'Tmax vs Tmin', xlab = 'Max Temperature (°C)', ylab = 'Min Temperature (°C)')
+
+
+# Distribution of snowfall > 0 and < 100 by year
+snowfall_filtered <- data %>% filter(snow > 0 & snow < 100)
+
+hist(snowfall_filtered$year, breaks = length(unique(snowfall_filtered$year)),
+     main = 'Distribution of Snowfall (0 < Snowfall < 100 mm) by Year',
+     xlab = 'Year', ylab = 'Frequency', col = 'lightblue')
+```
+#Problem2
+```{r}
+# Convert units (assuming tenths of mm for prcp, snow, snwd and tenths of degrees for tmax, tmin)
+data <- data %>%
+  mutate(
+    prcp = as.numeric(prcp) / 10,  # Convert to mm
+    snow = as.numeric(snow) / 10,  # Convert to mm
+    snwd = as.numeric(snwd) / 10,  # Convert to mm
+    tmax = as.numeric(tmax) / 10,  # Convert to degrees Celsius
+    tmin = as.numeric(tmin) / 10  # Convert to degrees Celsius
+  )
+
+# Summary of most common snowfall values
+snowfall_counts <- data %>% 
+  count(snow, sort = TRUE)
+print(snowfall_counts)
+```
